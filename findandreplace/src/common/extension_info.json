@@ -1,14 +1,14 @@
 {
     "content_scripts":["findandreplace.js"], 
-    "background_scripts":["background.js","jquery-1.12.0.min.js", "lodash.js"],
+    "background_scripts":["background.js","jquery-1.12.0.min.js", "lodash.js, options.js"],
     "options_page": "options.html",
     "description": "Find and replace or hide stuff", 
-    "creator": "zaphod", 
+    "creator": "Nick Gieschen",
     "version": "1.9.0", 
     "browser_button": {
-        "caption": "Find and Replace", 
-        "icon": "icons/button.png", 
+        "caption": "Find and Replace",
+        "icon": "icons/button.png",
         "tooltipText": "Find and Replace"
-    }, 
+    },
     "name": "findandreplace"
 }

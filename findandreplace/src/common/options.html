@@ -2,9 +2,24 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script id="itemTemplate" type="text/x-custom-template">
+        <li class="section">
+            <ul>
+                <li><label>URL match:</label> <input name="urlMatch" type="text"/></li>
+                <li><label>Path to element(s):</label> <input name="pathToElement" type="text"/></li>
+                <li><label>Replacement:</label> <input name="replacement" type="text"/></li>
+                <li><label>Remove</label> <input type="checkbox" name="remove"/></li>
+                <li><label>Starting node ID:</label> <input name="startingNodeId" type="text"/></li>
+                <li>
+                    <button class="delete">Delete</button>
+                </li>
+            </ul>
+        </li>
+    </script>
     <script type="text/javascript" src="kango-ui/kango_api.js"></script>
     <script type="text/javascript" src="jquery-1.12.0.min.js"></script>
     <script type="text/javascript" src="lodash.js"></script>
+    <script type="text/javascript" src="options.js"></script>
 
     <style type="text/css">
         * {
@@ -40,193 +55,48 @@
             margin-right: 15px;
         }
 
-        input {
-            width: 400px;
+        input[type=text] {
+            width: 260px;
         }
 
         tbody {
             margin-bottom: 10px;
         }
 
-        input, button {
+        input[type=submit], button {
             width: 200px;
         }
 
         button.delete {
             width: 120px;
         }
+
+        .exampleHeader {
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        #examplesContainer {
+            display: none;
+        }
+
+        #status {
+            display: none;
+            background-color: #ffd699;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 7px;
+            padding: 14px 22px;
+            border: 1px solid #ffc266;
+        }
     </style>
-
-    <script id="itemTemplate" type="text/x-custom-template">
-        <li class="section">
-            <ul>
-                <li><label>URL match:</label> <input name="urlMatch" type="text"/></li>
-                <li><label>Path to element(s):</label> <input name="pathToElement" type="text"/></li>
-                <li><label>Replacement:</label> <input name="replacement" type="text"/></li>
-                <li><label>Starting node ID:</label> <input name="startingNodeId" type="text"/></li>
-                <li>
-                    <button class="delete">Delete</button>
-                </li>
-            </ul>
-        </li>
-    </script>
-
-    <script>
-
-        var findAndReplaceOptions = function () {
-
-            var kangoReady;
-            var domReady;
-            var debug = true;
-            var template = $("#itemTemplate").html();
-
-            var kangoWrapper = {
-                getItem: function (name, fn) {
-                    kango.invokeAsync('kango.storage.getItem', name, fn);
-                },
-                setItem: function (name, value) {
-                    kango.invokeAsync('kango.storage.setItem', name, value);
-                },
-                clear: function() {
-                    kango.invokeAsync('kango.storage.clear');
-                },
-                setReadyEvent: function () {
-                    KangoAPI.onReady(function () {
-                        kangoReady = true;
-                        if (domReady) {
-                            init();
-                        }
-                    });
-                }
-            };
-
-            var test = function () {
-
-                var mock = function (prefix) {
-                    return {
-                        urlMatch: "//Users/nick/fo.*?",
-                        path: "//Users/nick.*?",
-                        replacement: prefix + "3",
-                        startingNode: prefix + "4"
-                    };
-                };
-
-                kangoWrapper.getItem = function (name, fn) {
-                    fn([mock("a"), mock("b")]);
-                };
-
-                kangoWrapper.setItem = function (name, value) {
-                    log("setting " + name + " as " + value);
-                };
-
-                kangoWrapper.setReadyEvent = function(){
-                    kangoReady = true
-                };
-            };
-
-            //test();
-
-            // Comment this out to test without Kango
-            //test();
-
-            var log = function (msg) {
-                if (debug) console.log(msg);
-            };
-
-            var addFormSection = function (data) {
-
-                var list = $("#formItems");
-                var tmpl = $(template);
-                var sectionId = "section-" + Math.floor(Math.random() * 1000000000);
-
-                tmpl.attr("id", sectionId);
-
-                list.append(tmpl[0].outerHTML);
-
-                var section = $("#" + sectionId);
-
-                $(section).find("button").on("click", function () {
-                    $("#" + sectionId).remove();
-                    saveData();
-                });
-
-                if (data) {
-                    $(section).find("input[name='urlMatch']")[0].value = data.urlMatch;
-                    $(section).find("input[name='pathToElement']")[0].value = data.path;
-                    $(section).find("input[name='replacement']")[0].value = data.replacement;
-                    $(section).find("input[name='startingNodeId']")[0].value = data.startingNode;
-                }
-
-                $("html, body").animate({scrollTop: $(document).height()}, "fast");
-            };
-
-            var layoutForm = function () {
-                //kangoWrapper.clear();
-                kangoWrapper.getItem("options", function (data) {
-                    if (!data) data = {};
-
-                    log(data);
-
-                    data = JSON.parse(data);
-
-                    for (i = 0; i < data.length; i++) {
-                        addFormSection(data[i]);
-                    }
-                });
-            };
-
-            var saveData = function () {
-
-                var values = _.map($(".section"), function (item) {
-                    item = $(item);
-                    return {
-                        urlMatch: item.find("input[name='urlMatch']")[0].value,
-                        path: item.find("input[name='pathToElement']")[0].value,
-                        replacement: item.find("input[name='replacement']")[0].value,
-                        startingNode: item.find("input[name='startingNodeId']")[0].value
-                    };
-                });
-
-                values = JSON.stringify(values);
-
-                log(values);
-
-                kangoWrapper.setItem('options', values);
-            };
-
-
-            var init = function () {
-
-                layoutForm();
-
-                $("#form").submit(function (event) {
-                    saveData();
-                    return false;
-                });
-            };
-
-
-            kangoWrapper.setReadyEvent();
-
-            $(document).ready(function () {
-                domReady = true;
-                if (kangoReady) {
-                    init();
-                }
-            });
-
-            return {
-                addFormSection: function () {
-                    addFormSection();
-                }
-            }
-        }();
-
-    </script>
 </head>
 <body>
+
+<div id="status"></div>
+
 <div id="main">
-    <p>Click "Add" to create a new find/replace item.</p>
+    <p>Click "New Replacement" to create a new find/replace item. Once you're done, click "Save Changes".</p>
 
     <dl>
         <dt>URL match</dt>
@@ -237,6 +107,8 @@
         <dd>An xPath which specifies the element or elements to be replaced.</dd>
         <dt>Replacement</dt>
         <dd>Text or HTML which replaces the elements.</dd>
+        <dt>Remove</dt>
+        <dd>The elements will be removed. This will occur instead of replacement.</dd>
         <dt>Starting node ID</dt>
         <dd>Optional and only for efficiency. This is the ID of the node from which the replacement search starts. If
             left blank,
@@ -244,11 +116,29 @@
         </dd>
     </dl>
 
+    <a href="javascript:void(0)" id="examplesLink">Click for examples</a>
+    <div id="examplesContainer">
+        <div class="exampleHeader">Remove the "Trending Topics" on facebook:</div>
+        <ul>
+            <li>URL match: (http|https)://(www.)?facebook.com.*$</li>
+            <li>Path to element: //*[@id = 'pagelet_trending_tags_and_topics']</li>
+            <li>Remove: checked</li>
+        </ul>
+
+        <div class="exampleHeader">Replace all occurances of an element which contains "replace me" with "replaced":
+        </div>
+        <ul>
+            <li>Path to element: //*[contains(text(), 'replace me')]</li>
+            <li>Replacement: replaced</li>
+            <li>Remove: unchecked</li>
+        </ul>
+    </div>
+
     <form id="form" action="">
         <ul id="formItems"></ul>
         <div>
-            <input type="submit" id="submitButton" value="submit"/>
-            <button onclick="findAndReplaceOptions.addFormSection(); return false">Add</button>
+            <input type="submit" id="submitButton" value="Save Changes"/>
+            <button onclick="findAndReplaceOptions.addFormSection(); return false">New Replacement</button>
         </div>
     </form>
 </div>
