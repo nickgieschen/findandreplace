@@ -125,10 +125,10 @@
             <li>Remove: checked</li>
         </ul>
 
-        <div class="exampleHeader">Replace all occurances of an element which contains "replace me" with "replaced":
+        <div class="exampleHeader">Replace regardless of case all occurances of an element which contains "replace me" with "replaced":
         </div>
         <ul>
-            <li>Path to element: //*[contains(text(), 'replace me')]</li>
+            <li>Path to element: //*[contains(translate(text(), 'REPLACM', 'replacm'), 'replace me')]</li>
             <li>Replacement: replaced</li>
             <li>Remove: unchecked</li>
         </ul>
