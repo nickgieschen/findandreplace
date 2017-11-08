@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Find and Replace",
+  "version": "1.0",
+  "description": "Find and replace or hide stuff",
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "src/persistence.js",
+        "src/findandreplace.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+
+  "options_ui": {
+    "page": "src/options.html"
+  },
+
+  "permissions": ["storage"]
+}
